@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User info</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="m-0">User info</h2>
+
+        <form th:action="@{/logout}" method="post" class="m-0">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">Logout</button>
+        </form>
+    </div>
+
+    <div class="w-50">
+        <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input type="text" class="form-control" th:value="${user.username}" disabled>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control" th:value="${user.name}" disabled>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Surname</label>
+            <input type="text" class="form-control" th:value="${user.surname}" disabled>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Age</label>
+            <input type="number" class="form-control" th:value="${user.age}" disabled>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Roles</label>
+            <div class="form-control" style="background:#f8f9fa;">
+                <span th:each="r : ${user.roles}" th:text="${r.name} + ' '"></span>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
