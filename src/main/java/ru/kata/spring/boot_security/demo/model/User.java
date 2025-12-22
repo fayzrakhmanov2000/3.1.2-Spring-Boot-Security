@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 
 @Entity
 @Table(name = "users")
@@ -30,7 +31,7 @@ public class User implements UserDetails {
     @Column(name="password", nullable = false)
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
@@ -38,7 +39,6 @@ public class User implements UserDetails {
 
     public User() {}
 
-    // getters/setters для твоих полей
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -57,7 +57,6 @@ public class User implements UserDetails {
     public Collection<Role> getRoles() { return roles; }
     public void setRoles(Collection<Role> roles) { this.roles = roles; }
 
-    // UserDetails:
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles;
@@ -80,4 +79,18 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() { return true; }
+
+    // equals/hashCode: обычно достаточно уникального username
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        User user = (User) o;
+        return Objects.equals(username, user.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username);
+    }
 }
