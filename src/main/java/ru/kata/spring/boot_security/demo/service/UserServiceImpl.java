@@ -8,6 +8,7 @@ import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.repositories.UserRepository;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -43,7 +44,11 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(long id) {
-        userRepository.deleteById(id);
+        User user = userRepository.findById(id)
+                .orElseThrow();
+
+        user.getRoles().clear(); // 🔥 важно
+        userRepository.delete(user);
     }
 
     @Override
@@ -55,41 +60,44 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void createUser(User user, String rawPassword) {
-        validateUsername(user);
+    public void createUser(User user, String rawPassword, List<Long> roleIds) {
+
         user.setPassword(passwordEncoder.encode(rawPassword));
 
-        // если роли не пришли из формы — выдадим ROLE_USER по умолчанию
-        if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            Role roleUser = roleRepository.findByName("ROLE_USER")
-                    .orElseThrow(() -> new IllegalStateException("ROLE_USER not found in DB"));
-            user.setRoles(Set.of(roleUser));
+        Set<Role> roles = new HashSet<>();
+
+        if (roleIds != null) {
+            roles.addAll(roleRepository.findAllById(roleIds));
         }
 
+        if (roles.isEmpty()) {
+            Role defaultRole = roleRepository.findByName("ROLE_USER")
+                    .orElseThrow();
+            roles.add(defaultRole);
+        }
+
+        user.setRoles(roles);
         userRepository.save(user);
     }
 
     @Override
     @Transactional
-    public void updateUser(User user, String rawPassword) {
-        User dbUser = getUser(user.getId());
+    public void updateUser(User user, String rawPassword, List<Long> roleIds) {
 
-        // username нельзя затирать null/blank
-        if (user.getUsername() == null || user.getUsername().isBlank()) {
-            user.setUsername(dbUser.getUsername());
-        }
+        User dbUser = userRepository.findById(user.getId())
+                .orElseThrow();
 
-        // пароль: если не ввели — оставляем старый
-        if (rawPassword != null && !rawPassword.isBlank()) {
-            user.setPassword(passwordEncoder.encode(rawPassword));
-        } else {
-            user.setPassword(dbUser.getPassword());
-        }
+        user.setPassword(
+                rawPassword != null && !rawPassword.isBlank()
+                        ? passwordEncoder.encode(rawPassword)
+                        : dbUser.getPassword()
+        );
 
-        // роли: если форма не прислала — оставляем прежние
-        if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            user.setRoles(dbUser.getRoles());
+        Set<Role> roles = new HashSet<>();
+        if (roleIds != null) {
+            roles.addAll(roleRepository.findAllById(roleIds));
         }
+        user.setRoles(roles.isEmpty() ? dbUser.getRoles() : roles);
 
         userRepository.save(user);
     }

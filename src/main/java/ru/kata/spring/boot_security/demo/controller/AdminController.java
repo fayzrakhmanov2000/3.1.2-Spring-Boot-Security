@@ -7,6 +7,8 @@ import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
@@ -36,8 +38,10 @@ public class AdminController {
 
     @PostMapping("/saveUser")
     public String saveUser(@ModelAttribute("user") User user,
-                           @RequestParam("rawPassword") String rawPassword) {
-        userService.createUser(user, rawPassword);
+                           @RequestParam("rawPassword") String rawPassword,
+                           @RequestParam(value = "roleIds", required = false) List<Long> roleIds) {
+
+        userService.createUser(user, rawPassword, roleIds);
         return "redirect:/admin";
     }
 
@@ -53,8 +57,10 @@ public class AdminController {
 
     @PostMapping("/updateUser")
     public String updateUser(@ModelAttribute("user") User user,
-                             @RequestParam(value = "rawPassword", required = false) String rawPassword) {
-        userService.updateUser(user, rawPassword);
+                             @RequestParam(value = "rawPassword", required = false) String rawPassword,
+                             @RequestParam(value = "roleIds", required = false) List<Long> roleIds) {
+
+        userService.updateUser(user, rawPassword, roleIds);
         return "redirect:/admin";
     }
 

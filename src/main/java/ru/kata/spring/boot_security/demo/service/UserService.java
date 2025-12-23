@@ -15,7 +15,6 @@ public interface UserService {
     User findByUsername(String username);
 
     // новые методы, чтобы контроллер не знал про encoder
-    void createUser(User user, String rawPassword);
-
-    void updateUser(User user, String rawPassword);
+    void createUser(User user, String rawPassword, List<Long> roleIds);
+    void updateUser(User user, String rawPassword, List<Long> roleIds);
 }
