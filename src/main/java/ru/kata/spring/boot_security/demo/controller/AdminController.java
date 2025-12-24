@@ -1,5 +1,7 @@
 package ru.kata.spring.boot_security.demo.controller;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +10,7 @@ import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin")
@@ -22,50 +25,37 @@ public class AdminController {
     }
 
     @GetMapping
-    public String showAllUsers(Model model) {
+    public String adminPage(@AuthenticationPrincipal UserDetails ud, Model model) {
         model.addAttribute("allUsers", userService.getAllUsers());
-        return "users";
-    }
-
-    @GetMapping("/addNewUser")
-    public String addNewUser(Model model) {
-        model.addAttribute("user", new User());
         model.addAttribute("allRoles", roleService.getAllRoles());
-        model.addAttribute("formAction", "/admin/saveUser");
-        model.addAttribute("isNew", true);
-        return "user-info";
+        model.addAttribute("newUser", new User());
+
+        model.addAttribute("authUserEmail", ud.getUsername());
+        model.addAttribute("authUserRoles", ud.getAuthorities().stream()
+                .map(a -> a.getAuthority().replace("ROLE_", ""))
+                .collect(Collectors.joining(" ")));
+
+        return "admin";
     }
 
     @PostMapping("/saveUser")
-    public String saveUser(@ModelAttribute("user") User user,
+    public String saveUser(@ModelAttribute("newUser") User user,
                            @RequestParam("rawPassword") String rawPassword,
                            @RequestParam(value = "roleIds", required = false) List<Long> roleIds) {
-
         userService.createUser(user, rawPassword, roleIds);
         return "redirect:/admin";
     }
 
-    @GetMapping("/updateInfo")
-    public String updateInfo(@RequestParam("userId") Long id, Model model) {
-        User user = userService.getUser(id);
-        model.addAttribute("user", user);
-        model.addAttribute("allRoles", roleService.getAllRoles());
-        model.addAttribute("formAction", "/admin/updateUser");
-        model.addAttribute("isNew", false);
-        return "user-info";
-    }
-
     @PostMapping("/updateUser")
-    public String updateUser(@ModelAttribute("user") User user,
+    public String updateUser(@ModelAttribute User user,
                              @RequestParam(value = "rawPassword", required = false) String rawPassword,
                              @RequestParam(value = "roleIds", required = false) List<Long> roleIds) {
-
         userService.updateUser(user, rawPassword, roleIds);
         return "redirect:/admin";
     }
 
-    @GetMapping("/deleteUser")
-    public String deleteUser(@RequestParam("userId") Long id) {
+    @PostMapping("/deleteUser")
+    public String deleteUser(@RequestParam("id") Long id) {
         userService.deleteUser(id);
         return "redirect:/admin";
     }
