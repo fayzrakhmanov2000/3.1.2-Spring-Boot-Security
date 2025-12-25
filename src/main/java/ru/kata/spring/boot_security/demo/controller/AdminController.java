@@ -25,15 +25,17 @@ public class AdminController {
     }
 
     @GetMapping
-    public String adminPage(@AuthenticationPrincipal UserDetails ud, Model model) {
+    public String showAdminPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         model.addAttribute("allUsers", userService.getAllUsers());
         model.addAttribute("allRoles", roleService.getAllRoles());
         model.addAttribute("newUser", new User());
 
-        model.addAttribute("authUserEmail", ud.getUsername());
-        model.addAttribute("authUserRoles", ud.getAuthorities().stream()
+        model.addAttribute("authUserEmail", userDetails.getUsername());
+        model.addAttribute("authUserRoles", userDetails.getAuthorities().stream()
                 .map(a -> a.getAuthority().replace("ROLE_", ""))
                 .collect(Collectors.joining(" ")));
+
+        model.addAttribute("currentPath", "/admin");
 
         return "admin";
     }

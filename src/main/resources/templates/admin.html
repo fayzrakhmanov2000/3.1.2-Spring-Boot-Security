@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Admin panel</title>
@@ -7,7 +9,6 @@
 </head>
 <body>
 
-<!-- TOP BAR -->
 <nav class="navbar navbar-dark bg-dark">
     <div class="container-fluid">
         <span class="navbar-text text-white">
@@ -24,15 +25,22 @@
 
 <div class="container-fluid">
     <div class="row">
-        <!-- LEFT MENU -->
         <div class="col-2 p-0 border-end" style="min-height: calc(100vh - 56px);">
             <div class="list-group list-group-flush">
-                <a class="list-group-item list-group-item-action active" th:href="@{/admin}">Admin</a>
-                <a class="list-group-item list-group-item-action" th:href="@{/user}">User</a>
+                <a class="list-group-item list-group-item-action"
+                   th:href="@{/admin}"
+                   th:classappend="${currentPath == '/admin'} ? ' active' : ''">
+                    Admin
+                </a>
+
+                <a class="list-group-item list-group-item-action"
+                   th:href="@{/user}"
+                   th:classappend="${currentPath == '/user'} ? ' active' : ''">
+                    User
+                </a>
             </div>
         </div>
 
-        <!-- MAIN -->
         <div class="col-10">
             <h1 class="mt-3 mb-3">Admin panel</h1>
 

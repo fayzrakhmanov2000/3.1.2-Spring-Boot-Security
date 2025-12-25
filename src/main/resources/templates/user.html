@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>User page</title>
@@ -25,7 +27,18 @@
     <div class="row">
         <div class="col-2 p-0 border-end" style="min-height: calc(100vh - 56px);">
             <div class="list-group list-group-flush">
-                <a class="list-group-item list-group-item-action active" th:href="@{/user}">User</a>
+                <a class="list-group-item list-group-item-action"
+                   th:href="@{/user}"
+                   th:classappend="${currentPath == '/user'} ? ' active' : ''">
+                    User
+                </a>
+
+                <a class="list-group-item list-group-item-action"
+                   th:href="@{/admin}"
+                   sec:authorize="hasRole('ADMIN')"
+                   th:classappend="${currentPath == '/admin'} ? ' active' : ''">
+                    Admin
+                </a>
             </div>
         </div>
 

@@ -18,9 +18,12 @@ public class UserController {
     }
 
     @GetMapping("/user")
-    public String userPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+    public String showUserPage(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         User user = userService.findByUsername(userDetails.getUsername());
         model.addAttribute("user", user);
+
+        model.addAttribute("currentPath", "/user");
+
         return "user";
     }
 }
