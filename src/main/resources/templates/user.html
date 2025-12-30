@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>User page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 </head>
 <body>
 
 <nav class="navbar navbar-dark bg-dark">
     <div class="container-fluid">
         <span class="navbar-text text-white">
-            <span th:text="${user.username}"></span>
+            <span th:text="${authUserEmail}"></span>
             <span class="text-white-50"> with roles: </span>
-            <span th:each="r : ${user.roles}" th:text="${#strings.replace(r.name,'ROLE_','')} + ' '"></span>
+            <span th:text="${authUserRoles}"></span>
         </span>
 
         <form th:action="@{/logout}" method="post" class="m-0">
@@ -25,7 +30,18 @@
     <div class="row">
         <div class="col-2 p-0 border-end" style="min-height: calc(100vh - 56px);">
             <div class="list-group list-group-flush">
-                <a class="list-group-item list-group-item-action active" th:href="@{/user}">User</a>
+                <a class="list-group-item list-group-item-action"
+                   th:href="@{/user}"
+                   th:classappend="${currentPath == '/user'} ? ' active' : ''">
+                    User
+                </a>
+
+                <a class="list-group-item list-group-item-action"
+                   th:href="@{/admin}"
+                   sec:authorize="hasRole('ADMIN')"
+                   th:classappend="${currentPath == '/admin'} ? ' active' : ''">
+                    Admin
+                </a>
             </div>
         </div>
 
@@ -51,15 +67,12 @@
                         </thead>
                         <tbody>
                         <tr>
-                            <td th:text="${user.id}"></td>
-                            <td th:text="${user.name}"></td>
-                            <td th:text="${user.surname}"></td>
-                            <td th:text="${user.age}"></td>
-                            <td th:text="${user.username}"></td>
-                            <td>
-                                <span th:each="r : ${user.roles}"
-                                      th:text="${#strings.replace(r.name,'ROLE_','')} + ' '"></span>
-                            </td>
+                            <td id="u_id"></td>
+                            <td id="u_name"></td>
+                            <td id="u_surname"></td>
+                            <td id="u_age"></td>
+                            <td id="u_username"></td>
+                            <td id="u_roles"></td>
                         </tr>
                         </tbody>
                     </table>
@@ -70,6 +83,24 @@
         </div>
     </div>
 </div>
+
+<script>
+    function rolesToText(roles) {
+        return (roles || []).map(r => r.name.replace('ROLE_', '')).join(' ');
+    }
+
+    (async () => {
+        const res = await fetch('/api/user/me');
+        const u = await res.json();
+
+        document.getElementById('u_id').textContent = u.id ?? '';
+        document.getElementById('u_name').textContent = u.name ?? '';
+        document.getElementById('u_surname').textContent = u.surname ?? '';
+        document.getElementById('u_age').textContent = u.age ?? '';
+        document.getElementById('u_username').textContent = u.username ?? '';
+        document.getElementById('u_roles').textContent = rolesToText(u.roles);
+    })();
+</script>
 
 </body>
 </html>
